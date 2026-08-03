@@ -1,3 +1,4 @@
+// config/plugins.ts
 import type { Core } from '@strapi/strapi';
 
 const allowedMediaTypes = [
@@ -23,6 +24,7 @@ const deniedExecutableTypes = [
 ];
 
 const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Plugin => ({
+  // ─── Users & Permissions ──────────────────────────────
   'users-permissions': {
     config: {
       jwtManagement: 'refresh',
@@ -31,11 +33,36 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Plugin =>
       },
     },
   },
+
+  // ─── Upload Security ──────────────────────────────────
   upload: {
     config: {
       security: {
         allowedTypes: allowedMediaTypes,
         deniedTypes: deniedExecutableTypes,
+      },
+    },
+  },
+
+  // ─── ✅ Email Configuration ──────────────────────────────
+  email: {
+    config: {
+      provider: 'nodemailer',
+      providerOptions: {
+        host: env('SMTP_HOST', 'smtp.gmail.com'),
+        port: env('SMTP_PORT', 587),
+        secure: false,
+        auth: {
+          user: env('SMTP_USERNAME'),
+          pass: env('SMTP_PASSWORD'),
+        },
+        tls: {
+          rejectUnauthorized: false,
+        },
+      },
+      settings: {
+        defaultFrom: env('SMTP_FROM', 'noreply@yourhotel.com'),
+        defaultReplyTo: env('SMTP_REPLY_TO', 'info@yourhotel.com'),
       },
     },
   },

@@ -18,6 +18,7 @@
     "@strapi/database": "5.51.1",
     "@strapi/plugin-cloud": "5.51.1",
     "@strapi/plugin-users-permissions": "5.51.1",
+    "@strapi/provider-email-nodemailer": "^5.51.1",
     "@strapi/strapi": "5.51.1",
     "better-sqlite3": "12.8.0",
     "react": "^18.0.0",

@@ -1,0 +1,57 @@
+{
+  "kind": "collectionType",
+  "collectionName": "bookings",
+  "info": {
+    "singularName": "booking",
+    "pluralName": "bookings",
+    "displayName": "Booking"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "email"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "room": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::room.room"
+    },
+    "check_in": {
+      "type": "date"
+    },
+    "check_out": {
+      "type": "date"
+    },
+    "total": {
+      "type": "integer"
+    },
+    "screenshot": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "booking_status": {
+      "type": "enumeration",
+      "default": "Pending",
+      "enum": [
+        "Pending",
+        "Approved",
+        "Rejected"
+      ]
+    }
+  }
+}

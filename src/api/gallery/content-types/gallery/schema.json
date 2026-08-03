@@ -1,0 +1,49 @@
+{
+  "kind": "collectionType",
+  "collectionName": "galleries",
+  "info": {
+    "singularName": "gallery",
+    "pluralName": "galleries",
+    "displayName": "Gallery"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "Title": {
+      "type": "string"
+    },
+    "Description": {
+      "type": "text"
+    },
+    "Image": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "Category": {
+      "type": "enumeration",
+      "enum": [
+        "Exterior",
+        "Interior",
+        "Rooms",
+        "Pool",
+        "Spa",
+        "Event",
+        "Other"
+      ]
+    },
+    "Order": {
+      "type": "integer"
+    },
+    "IsFeatured": {
+      "type": "boolean"
+    }
+  }
+}

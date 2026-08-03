@@ -1,0 +1,62 @@
+{
+  "kind": "collectionType",
+  "collectionName": "rooms",
+  "info": {
+    "singularName": "room",
+    "pluralName": "rooms",
+    "displayName": "Room"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "bed_type": {
+      "type": "string"
+    },
+    "capacity": {
+      "type": "integer"
+    },
+    "price": {
+      "type": "decimal"
+    },
+    "overview": {
+      "type": "text"
+    },
+    "details": {
+      "type": "blocks"
+    },
+    "photos": {
+      "type": "media",
+      "multiple": true,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "available": {
+      "type": "boolean"
+    },
+    "amenities": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::amenitie.amenitie",
+      "inversedBy": "rooms"
+    },
+    "reviews": {
+      "type": "relation",
+      "relation": "oneToMany",
+      "target": "api::review.review",
+      "mappedBy": "room"
+    },
+    "featured": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}
