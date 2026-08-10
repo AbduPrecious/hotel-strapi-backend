@@ -1,0 +1,24 @@
+{
+  "kind": "singleType",
+  "collectionName": "terms",
+  "info": {
+    "singularName": "term",
+    "pluralName": "terms",
+    "displayName": "TermsAndConditions"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "last_updated": {
+      "type": "date"
+    },
+    "content": {
+      "type": "blocks"
+    }
+  }
+}

@@ -44,6 +44,13 @@
     },
     "IsFeatured": {
       "type": "boolean"
+    },
+    "video": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "videos"
+      ]
     }
   }
 }

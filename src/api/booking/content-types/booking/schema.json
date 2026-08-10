@@ -52,6 +52,12 @@
         "Approved",
         "Rejected"
       ]
+    },
+    "payment_method": {
+      "type": "enumeration",
+      "enum": [
+        "screenshot,cash"
+      ]
     }
   }
 }
