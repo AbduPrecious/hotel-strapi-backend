@@ -9,7 +9,6 @@ const config: Core.Config.Api = {
   },
   documents: {
     strictParams: true,
-    strictRelations: true,
   },
 };
 

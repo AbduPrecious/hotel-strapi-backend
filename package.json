@@ -38,6 +38,9 @@
     "node": ">=20.0.0 <=24.x.x",
     "npm": ">=6.0.0"
   },
+  "overrides": {
+    "@strapi/admin": "5.38.0"
+  },
   "strapi": {
     "uuid": "77ca956f-996b-4cee-97f3-10808431cb96",
     "installId": "5c9a42b4c20d0e9293bf572227179364e9cd3708666f0aa5ba41f942b65e9b86"

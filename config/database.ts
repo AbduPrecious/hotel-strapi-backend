@@ -1,19 +1,13 @@
 import path from 'path';
 import type { Core } from '@strapi/strapi';
-import { isDatabaseClientKind } from '@strapi/database';
+
+type DatabaseClient = 'mysql' | 'postgres' | 'sqlite';
 
 const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Database => {
-  const client = env('DATABASE_CLIENT', 'sqlite');
+  const client = env('DATABASE_CLIENT', 'sqlite') as DatabaseClient;
 
-  if (!isDatabaseClientKind(client)) {
-    throw new Error(
-      `Unsupported DATABASE_CLIENT: ${client}. Use "postgres", "mysql", or "sqlite".`
-    );
-  }
-
-  const connections: Record<Core.Config.Database.ClientKind, Core.Config.Database['connection']> = {
+  const connections = {
     mysql: {
-      client: 'mysql',
       connection: {
         host: env('DATABASE_HOST', 'localhost'),
         port: env.int('DATABASE_PORT', 3306),
@@ -32,7 +26,6 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Database 
       pool: { min: env.int('DATABASE_POOL_MIN', 2), max: env.int('DATABASE_POOL_MAX', 10) },
     },
     postgres: {
-      client: 'postgres',
       connection: {
         connectionString: env('DATABASE_URL'),
         host: env('DATABASE_HOST', 'localhost'),
@@ -53,7 +46,6 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Database 
       pool: { min: env.int('DATABASE_POOL_MIN', 2), max: env.int('DATABASE_POOL_MAX', 10) },
     },
     sqlite: {
-      client: 'sqlite',
       connection: {
         filename: path.join(__dirname, '..', '..', env('DATABASE_FILENAME', '.tmp/data.db')),
       },
@@ -63,10 +55,11 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Database 
 
   return {
     connection: {
+      client,
       ...connections[client],
       acquireConnectionTimeout: env.int('DATABASE_CONNECTION_TIMEOUT', 60000),
     },
-  };
+  } as Core.Config.Database;
 };
 
 export default config;
