@@ -523,7 +523,7 @@ export interface ApiBookingBooking extends Struct.CollectionTypeSchema {
   };
   attributes: {
     booking_status: Schema.Attribute.Enumeration<
-      ['Pending', 'Approved', 'Rejected']
+      ['Pending', 'Approved', 'Rejected', 'Cancelled']
     > &
       Schema.Attribute.DefaultTo<'Pending'>;
     check_in: Schema.Attribute.Date;
@@ -539,7 +539,7 @@ export interface ApiBookingBooking extends Struct.CollectionTypeSchema {
     > &
       Schema.Attribute.Private;
     name: Schema.Attribute.String;
-    payment_method: Schema.Attribute.Enumeration<['screenshot,cash']>;
+    payment_method: Schema.Attribute.Enumeration<['bank_transfer', 'cash']>;
     phone: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
     room: Schema.Attribute.Relation<'oneToOne', 'api::room.room'>;
@@ -624,6 +624,35 @@ export interface ApiContactContact extends Struct.SingleTypeSchema {
   };
 }
 
+export interface ApiFeatureIconFeatureIcon extends Struct.CollectionTypeSchema {
+  collectionName: 'feature_icons';
+  info: {
+    displayName: 'Feature Icon';
+    pluralName: 'feature-icons';
+    singularName: 'feature-icon';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    Icon_Class: Schema.Attribute.String;
+    Label: Schema.Attribute.String;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::feature-icon.feature-icon'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
 export interface ApiGalleryGallery extends Struct.CollectionTypeSchema {
   collectionName: 'galleries';
   info: {
@@ -657,6 +686,45 @@ export interface ApiGalleryGallery extends Struct.CollectionTypeSchema {
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     video: Schema.Attribute.Media<'videos'>;
+  };
+}
+
+export interface ApiHomeWelcomeHomeWelcome extends Struct.SingleTypeSchema {
+  collectionName: 'home_welcomes';
+  info: {
+    displayName: 'HomeWelcome';
+    pluralName: 'home-welcomes';
+    singularName: 'home-welcome';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    author_name: Schema.Attribute.String;
+    author_title: Schema.Attribute.String;
+    content: Schema.Attribute.Blocks;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    discovery_label: Schema.Attribute.String;
+    discovery_link: Schema.Attribute.String;
+    gallery: Schema.Attribute.Media<
+      'images' | 'files' | 'videos' | 'audios',
+      true
+    >;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::home-welcome.home-welcome'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    quote: Schema.Attribute.String;
+    subtitle: Schema.Attribute.String;
+    title: Schema.Attribute.String;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
   };
 }
 
@@ -727,6 +795,80 @@ export interface ApiMenuMenu extends Struct.CollectionTypeSchema {
     order: Schema.Attribute.Integer;
     price: Schema.Attribute.Integer;
     publishedAt: Schema.Attribute.DateTime;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiPaymentMethodPaymentMethod extends Struct.SingleTypeSchema {
+  collectionName: 'payment_methods';
+  info: {
+    displayName: 'PaymentMethod';
+    pluralName: 'payment-methods';
+    singularName: 'payment-method';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    cbe_account_name: Schema.Attribute.String;
+    cbe_account_number: Schema.Attribute.String;
+    cbe_bank_name: Schema.Attribute.String;
+    cbe_qr_code: Schema.Attribute.Media<
+      'images' | 'files' | 'videos' | 'audios'
+    >;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::payment-method.payment-method'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    telebirr_name: Schema.Attribute.String;
+    telebirr_number: Schema.Attribute.String;
+    telebirr_qr_code: Schema.Attribute.Media<
+      'images' | 'files' | 'videos' | 'audios'
+    >;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiRestaurantSlideRestaurantSlide
+  extends Struct.CollectionTypeSchema {
+  collectionName: 'restaurant_slides';
+  info: {
+    displayName: 'Restaurant Slide';
+    pluralName: 'restaurant-slides';
+    singularName: 'restaurant-slide';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    category: Schema.Attribute.String;
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    descriptionParagraph1: Schema.Attribute.Text;
+    descriptionParagraph2: Schema.Attribute.Text;
+    images: Schema.Attribute.Media<
+      'images' | 'files' | 'videos' | 'audios',
+      true
+    >;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::restaurant-slide.restaurant-slide'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
+    title: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -808,6 +950,36 @@ export interface ApiRoomRoom extends Struct.CollectionTypeSchema {
     price: Schema.Attribute.Decimal;
     publishedAt: Schema.Attribute.DateTime;
     reviews: Schema.Attribute.Relation<'oneToMany', 'api::review.review'>;
+    title: Schema.Attribute.String;
+    updatedAt: Schema.Attribute.DateTime;
+    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+  };
+}
+
+export interface ApiServiceService extends Struct.CollectionTypeSchema {
+  collectionName: 'services';
+  info: {
+    displayName: 'Service';
+    pluralName: 'services';
+    singularName: 'service';
+  };
+  options: {
+    draftAndPublish: true;
+  };
+  attributes: {
+    createdAt: Schema.Attribute.DateTime;
+    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
+      Schema.Attribute.Private;
+    description: Schema.Attribute.Text;
+    icon: Schema.Attribute.String;
+    locale: Schema.Attribute.String & Schema.Attribute.Private;
+    localizations: Schema.Attribute.Relation<
+      'oneToMany',
+      'api::service.service'
+    > &
+      Schema.Attribute.Private;
+    publishedAt: Schema.Attribute.DateTime;
     title: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -1417,11 +1589,16 @@ declare module '@strapi/strapi' {
       'api::booking.booking': ApiBookingBooking;
       'api::contact-submission.contact-submission': ApiContactSubmissionContactSubmission;
       'api::contact.contact': ApiContactContact;
+      'api::feature-icon.feature-icon': ApiFeatureIconFeatureIcon;
       'api::gallery.gallery': ApiGalleryGallery;
+      'api::home-welcome.home-welcome': ApiHomeWelcomeHomeWelcome;
       'api::hotel-detail.hotel-detail': ApiHotelDetailHotelDetail;
       'api::menu.menu': ApiMenuMenu;
+      'api::payment-method.payment-method': ApiPaymentMethodPaymentMethod;
+      'api::restaurant-slide.restaurant-slide': ApiRestaurantSlideRestaurantSlide;
       'api::review.review': ApiReviewReview;
       'api::room.room': ApiRoomRoom;
+      'api::service.service': ApiServiceService;
       'api::stat.stat': ApiStatStat;
       'api::term.term': ApiTermTerm;
       'api::why-choose-us.why-choose-us': ApiWhyChooseUsWhyChooseUs;

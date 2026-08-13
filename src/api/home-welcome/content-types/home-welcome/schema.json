@@ -1,0 +1,49 @@
+{
+  "kind": "singleType",
+  "collectionName": "home_welcomes",
+  "info": {
+    "singularName": "home-welcome",
+    "pluralName": "home-welcomes",
+    "displayName": "HomeWelcome"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "subtitle": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "content": {
+      "type": "blocks"
+    },
+    "discovery_label": {
+      "type": "string"
+    },
+    "discovery_link": {
+      "type": "string"
+    },
+    "quote": {
+      "type": "string"
+    },
+    "author_name": {
+      "type": "string"
+    },
+    "author_title": {
+      "type": "string"
+    },
+    "gallery": {
+      "type": "media",
+      "multiple": true,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    }
+  }
+}

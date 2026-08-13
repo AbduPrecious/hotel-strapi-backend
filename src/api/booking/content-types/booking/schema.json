@@ -50,13 +50,15 @@
       "enum": [
         "Pending",
         "Approved",
-        "Rejected"
+        "Rejected",
+        "Cancelled"
       ]
     },
     "payment_method": {
       "type": "enumeration",
       "enum": [
-        "screenshot,cash"
+        "bank_transfer",
+        "cash"
       ]
     }
   }

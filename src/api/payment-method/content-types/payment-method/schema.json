@@ -1,0 +1,50 @@
+{
+  "kind": "singleType",
+  "collectionName": "payment_methods",
+  "info": {
+    "singularName": "payment-method",
+    "pluralName": "payment-methods",
+    "displayName": "PaymentMethod"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "cbe_bank_name": {
+      "type": "string"
+    },
+    "cbe_account_name": {
+      "type": "string"
+    },
+    "cbe_account_number": {
+      "type": "string"
+    },
+    "cbe_qr_code": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "telebirr_name": {
+      "type": "string"
+    },
+    "telebirr_number": {
+      "type": "string"
+    },
+    "telebirr_qr_code": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    }
+  }
+}

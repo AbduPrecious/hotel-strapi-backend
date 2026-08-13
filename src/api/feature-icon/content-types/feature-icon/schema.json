@@ -1,0 +1,21 @@
+{
+  "kind": "collectionType",
+  "collectionName": "feature_icons",
+  "info": {
+    "singularName": "feature-icon",
+    "pluralName": "feature-icons",
+    "displayName": "Feature Icon"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "Label": {
+      "type": "string"
+    },
+    "Icon_Class": {
+      "type": "string"
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "kind": "collectionType",
+  "collectionName": "restaurant_slides",
+  "info": {
+    "singularName": "restaurant-slide",
+    "pluralName": "restaurant-slides",
+    "displayName": "Restaurant Slide"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "category": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "descriptionParagraph1": {
+      "type": "text"
+    },
+    "descriptionParagraph2": {
+      "type": "text"
+    },
+    "images": {
+      "type": "media",
+      "multiple": true,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    }
+  }
+}
