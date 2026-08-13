@@ -458,9 +458,6 @@ export interface ApiAboutAbout extends Struct.SingleTypeSchema {
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    Hero_Image: Schema.Attribute.Media<
-      'images' | 'files' | 'videos' | 'audios'
-    >;
     Hero_Subtitle: Schema.Attribute.String;
     Hero_Title: Schema.Attribute.String;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
@@ -602,9 +599,6 @@ export interface ApiContactContact extends Struct.SingleTypeSchema {
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
     Email: Schema.Attribute.Email;
-    Hero_Image: Schema.Attribute.Media<
-      'images' | 'files' | 'videos' | 'audios'
-    >;
     Hero_Subtitle: Schema.Attribute.String;
     Hero_Title: Schema.Attribute.String;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
@@ -1036,37 +1030,6 @@ export interface ApiTermTerm extends Struct.SingleTypeSchema {
       Schema.Attribute.Private;
     publishedAt: Schema.Attribute.DateTime;
     title: Schema.Attribute.String;
-    updatedAt: Schema.Attribute.DateTime;
-    updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-  };
-}
-
-export interface ApiWhyChooseUsWhyChooseUs extends Struct.CollectionTypeSchema {
-  collectionName: 'why_choose_uses';
-  info: {
-    displayName: 'Why Choose Us';
-    pluralName: 'why-choose-uses';
-    singularName: 'why-choose-us';
-  };
-  options: {
-    draftAndPublish: true;
-  };
-  attributes: {
-    createdAt: Schema.Attribute.DateTime;
-    createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
-      Schema.Attribute.Private;
-    Description: Schema.Attribute.Text;
-    Image: Schema.Attribute.Media<'images' | 'files' | 'videos' | 'audios'>;
-    locale: Schema.Attribute.String & Schema.Attribute.Private;
-    localizations: Schema.Attribute.Relation<
-      'oneToMany',
-      'api::why-choose-us.why-choose-us'
-    > &
-      Schema.Attribute.Private;
-    Order: Schema.Attribute.Integer;
-    publishedAt: Schema.Attribute.DateTime;
-    Title: Schema.Attribute.String;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -1601,7 +1564,6 @@ declare module '@strapi/strapi' {
       'api::service.service': ApiServiceService;
       'api::stat.stat': ApiStatStat;
       'api::term.term': ApiTermTerm;
-      'api::why-choose-us.why-choose-us': ApiWhyChooseUsWhyChooseUs;
       'plugin::content-releases.release': PluginContentReleasesRelease;
       'plugin::content-releases.release-action': PluginContentReleasesReleaseAction;
       'plugin::i18n.locale': PluginI18NLocale;

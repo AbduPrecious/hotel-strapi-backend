@@ -17,16 +17,6 @@
     "Hero_Subtitle": {
       "type": "string"
     },
-    "Hero_Image": {
-      "type": "media",
-      "multiple": false,
-      "allowedTypes": [
-        "images",
-        "files",
-        "videos",
-        "audios"
-      ]
-    },
     "Section_Title": {
       "type": "string"
     },

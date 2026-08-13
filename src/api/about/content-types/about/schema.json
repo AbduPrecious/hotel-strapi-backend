@@ -17,16 +17,6 @@
     "Hero_Subtitle": {
       "type": "string"
     },
-    "Hero_Image": {
-      "type": "media",
-      "multiple": false,
-      "allowedTypes": [
-        "images",
-        "files",
-        "videos",
-        "audios"
-      ]
-    },
     "Section_Title": {
       "type": "string"
     },
@@ -43,6 +33,9 @@
         "audios"
       ]
     },
+    "Mission_Title": {
+      "type": "string"
+    },
     "Mission_Text": {
       "type": "blocks"
     },
@@ -51,9 +44,6 @@
     },
     "Vision_Text": {
       "type": "blocks"
-    },
-    "Mission_Title": {
-      "type": "string"
     }
   }
 }
