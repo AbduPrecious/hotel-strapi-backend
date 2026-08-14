@@ -7,7 +7,7 @@ export default {
       // 'fr',
       // 'cs',
       // 'de',
-      // 'da',
+      // 'dk',
       // 'es',
       // 'he',
       // 'id',
@@ -30,6 +30,12 @@ export default {
       // 'zh-Hans',
       // 'zh',
     ],
+     translations: {
+      en: {
+        "Auth.form.welcome.title": "Welcome to Hotel API!",
+        "Auth.form.welcome.subtitle": "Log in to your Hotel API dashboard",
+      },
+    },
   },
   bootstrap(app: StrapiApp) {
     console.log(app);

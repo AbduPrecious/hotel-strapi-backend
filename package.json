@@ -1,5 +1,5 @@
 {
-  "name": "rediet-hotel-backend",
+  "name": "cpd-center-api",
   "version": "0.1.0",
   "private": true,
   "description": "A Strapi application",
@@ -9,21 +9,23 @@
     "deploy": "strapi deploy",
     "dev": "strapi develop",
     "develop": "strapi develop",
+    "seed:example": "node ./scripts/seed.js",
     "start": "strapi start",
     "strapi": "strapi",
     "upgrade": "npx @strapi/upgrade latest",
     "upgrade:dry": "npx @strapi/upgrade latest --dry"
   },
   "dependencies": {
-    "@strapi/database": "5.51.1",
-    "@strapi/plugin-cloud": "5.51.1",
-    "@strapi/plugin-users-permissions": "5.51.1",
-    "@strapi/provider-email-nodemailer": "^5.51.1",
-    "@strapi/strapi": "5.51.1",
-    "better-sqlite3": "12.8.0",
+    "@arshiash80/strapi-plugin-iconhub": "^1.1.1",
+    "@strapi/plugin-cloud": "5.38.0",
+    "@strapi/plugin-users-permissions": "5.38.0",
+    "@strapi/strapi": "5.38.0",
+    "fs-extra": "^10.0.0",
+    "mime-types": "^2.1.27",
+    "pg": "8.8.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
-    "react-router-dom": "^6.30.3",
+    "react-router-dom": "^6.0.0",
     "styled-components": "^6.0.0"
   },
   "devDependencies": {
@@ -33,11 +35,14 @@
     "typescript": "^5"
   },
   "engines": {
-    "node": ">=20.0.0 <=26.x.x",
+    "node": ">=20.0.0 <=24.x.x",
     "npm": ">=6.0.0"
   },
+  "overrides": {
+    "@strapi/admin": "5.38.0"
+  },
   "strapi": {
-    "uuid": "c18d02a3-c24a-437a-be29-f5a7a32b83f4",
-    "installId": "c0e337e77aad49a26828a5d465794a215d5c4d175a048558bac9c98b7cac9ea8"
+    "uuid": "77ca956f-996b-4cee-97f3-10808431cb96",
+    "installId": "5c9a42b4c20d0e9293bf572227179364e9cd3708666f0aa5ba41f942b65e9b86"
   }
 }
