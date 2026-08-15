@@ -1,0 +1,38 @@
+services:
+  strapi-db:
+    image: postgres:16-alpine
+    container_name: hotel-db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DATABASE_USERNAME}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
+      POSTGRES_DB: ${DATABASE_NAME}
+    volumes:
+      - strapi-data:/var/lib/postgresql/data
+    networks:
+      - hotel-net
+
+  strapi:
+    build: .
+    container_name: strapi-app
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - STRAPI_ADMIN_BACKEND_URL=${PUBLIC_URL}
+      - STRAPI_URL=${PUBLIC_URL}
+    volumes:
+      # BIND MOUNT: Map local folder to container folder
+      - ./public/uploads:/opt/app/public/uploads
+    ports:
+      - "3001:1337"
+    networks:
+      - hotel-net
+    depends_on:
+      - hotel-db
+
+networks:
+  hotel-net:
+    external: true
+
+volumes:
+  strapi-data:

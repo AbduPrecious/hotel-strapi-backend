@@ -1,40 +1,34 @@
-name: Deploy Strapi App to cPanel via FTP
+name: Deploy Strapi Portal
 
 on:
   push:
-    branches:
-      - main
+    branches: [ main ]
 
 jobs:
-  web-deploy:
+  deploy:
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: 22.18.0
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/hotel-api
+            git pull origin main
+            
+            # Create the shared network if it doesn't exist
+            docker network inspect hotel-shared-network >/dev/null 2>&1 || \
+            docker network create hotel-shared-network
 
-    - name: Install dependencies
-      run: npm install --force
-
-    - name: Build Strapi app
-      run: npm run build
-
-    - name: Deploy to cPanel via FTP
-      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-      with:
-        server: ${{ secrets.FTP_SERVER }}
-        username: ${{ secrets.FTP_USERNAME }}
-        password: ${{ secrets.FTP_PASSWORD }}
-        server-dir: ${{ secrets.CPANEL_DIR }}
-        local-dir: ./
-        protocol: ftp
-        exclude: |
-         .git/**
-         .github/**
-          node_modules/**
-      # Optionally add any other files you don't need on the remote server
+            # Build and restart using the same config that worked locally
+            # Note: We pass the production URL as a build arg
+            docker compose build --build-arg PUBLIC_URL=https://api-hotel.qenenia.com
+            docker compose up -d
+            
+            # Prune old images to save space on the VPS
+            docker image prune -f
