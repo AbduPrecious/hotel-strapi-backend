@@ -19,7 +19,7 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 2222
           script: |
-            cd /var/www/hotel-api
+            cd /var/www/hotel-api/hotel-strapi-backend
             git pull origin main
             
             # Create the shared network if it doesn't exist

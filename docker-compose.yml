@@ -24,7 +24,7 @@ services:
       # BIND MOUNT: Map local folder to container folder
       - ./public/uploads:/opt/app/public/uploads
     ports:
-      - "3001:1337"
+      - "3008:1337"
     networks:
       - hotel-net
     depends_on:
