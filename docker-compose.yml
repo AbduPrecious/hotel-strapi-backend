@@ -11,24 +11,33 @@ services:
       - strapi-data:/var/lib/postgresql/data
     networks:
       - hotel-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USERNAME} -d ${DATABASE_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   strapi:
     build: .
     container_name: hotel-app
     restart: always
+    env_file: .env
     environment:
-      - NODE_ENV=production
-      - STRAPI_ADMIN_BACKEND_URL=${PUBLIC_URL}
-      - STRAPI_URL=${PUBLIC_URL}
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 1337
+      DATABASE_HOST: strapi-db
+      STRAPI_ADMIN_BACKEND_URL: ${PUBLIC_URL}
+      STRAPI_URL: ${PUBLIC_URL}
     volumes:
-      # BIND MOUNT: Map local folder to container folder
       - ./public/uploads:/opt/app/public/uploads
     ports:
-      - "3008:1337"
+      - "127.0.0.1:3008:1337"
     networks:
       - hotel-net
     depends_on:
-      - strapi-db
+      strapi-db:
+        condition: service_healthy
 
 networks:
   hotel-net:
