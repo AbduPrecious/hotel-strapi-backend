@@ -14,7 +14,7 @@ services:
 
   strapi:
     build: .
-    container_name: strapi-app
+    container_name: hotel-app
     restart: always
     environment:
       - NODE_ENV=production
