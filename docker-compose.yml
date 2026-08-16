@@ -18,6 +18,7 @@ services:
       retries: 10
 
   strapi:
+    image: ${STRAPI_IMAGE:-ghcr.io/abduprecious/hotel-strapi-backend:latest}
     build: .
     container_name: hotel-app
     restart: always
