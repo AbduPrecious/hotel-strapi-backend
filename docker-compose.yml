@@ -28,7 +28,7 @@ services:
     networks:
       - hotel-net
     depends_on:
-      - hotel-db
+      - strapi-db
 
 networks:
   hotel-net:
