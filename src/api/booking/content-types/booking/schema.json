@@ -60,6 +60,43 @@
         "bank_transfer",
         "cash"
       ]
+    },
+    "payment_bank": {
+      "type": "enumeration",
+      "enum": [
+        "telebirr",
+        "cbe",
+        "cbebirr",
+        "boa",
+        "awash",
+        "dashen",
+        "mpesa",
+        "siinqee",
+        "kaafiebirr",
+        "coopayebirr"
+      ]
+    },
+    "payment_reference": {
+      "type": "string"
+    },
+    "payment_suffix": {
+      "type": "string"
+    },
+    "payment_status": {
+      "type": "enumeration",
+      "default": "unverified",
+      "enum": [
+        "unverified",
+        "verifying",
+        "verified",
+        "failed"
+      ]
+    },
+    "verify_request_id": {
+      "type": "string"
+    },
+    "verified_at": {
+      "type": "datetime"
     }
   }
 }
