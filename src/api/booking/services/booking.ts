@@ -143,7 +143,8 @@ export default factories.createCoreService('api::booking.booking', ({ strapi }) 
       json = polled;
     }
 
-    const item: any = Array.isArray(json.data) ? json.data[0] : json.data;
+       const raw: any = Array.isArray(json.data) ? json.data[0] : json.data;
+    const item: any = raw?.result ?? raw;
 
     if (!item || item.verified !== true) {
       await save({ payment_status: 'failed' });
