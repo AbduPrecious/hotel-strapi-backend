@@ -67,16 +67,40 @@ jobs:
         env:
           GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           STRAPI_IMAGE: ${{ needs.build.outputs.image }}:${{ github.sha }}
+          VERIFY_ET_API_KEY: ${{ secrets.VERIFY_ET_API_KEY }}
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 2222
-          envs: GHCR_TOKEN,STRAPI_IMAGE
+          envs: GHCR_TOKEN,STRAPI_IMAGE,VERIFY_ET_API_KEY
           script: |
             echo "$GHCR_TOKEN" | docker login ghcr.io -u ${{ github.repository_owner }} --password-stdin
             cd /var/www/hotel-api/hotel-strapi-backend
             git pull origin main
+
+            # 1) Database backup. If it fails or is empty, stop before touching anything.
+            mkdir -p ~/backups
+            BACKUP=~/backups/hotel-$(date +%F-%H%M).sql
+            docker compose exec -T strapi-db sh -c 'pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB"' > "$BACKUP"
+            if [ ! -s "$BACKUP" ]; then
+              echo "BACKUP FAILED OR EMPTY - aborting deploy"
+              rm -f "$BACKUP"
+              exit 1
+            fi
+            echo "Backup OK: $(ls -lh "$BACKUP")"
+
+            # 2) Write Verify.ET settings into the server .env
+            [ -n "$(tail -c1 .env)" ] && echo >> .env
+            if [ -n "$VERIFY_ET_API_KEY" ]; then
+              sed -i "/^VERIFY_ET_API_KEY=/d" .env
+              echo "VERIFY_ET_API_KEY=$VERIFY_ET_API_KEY" >> .env
+            fi
+            for kv in "VERIFY_ET_AUTO_APPROVE=false" "VERIFY_ET_REQUIRE_RECEIVER_MATCH=true"; do
+              k="${kv%%=*}"
+              grep -q "^$k=" .env || echo "$kv" >> .env
+            done
+
             export STRAPI_IMAGE
             docker compose pull
             docker compose up -d
