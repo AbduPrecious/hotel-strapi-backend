@@ -1,9 +1,13 @@
 /**
  * booking controller
+ *
+ * Public (anonymous guests):  create, verifyPayment
+ * Authenticated (logged in):   find / findOne (own bookings only), update (cancel own booking only)
  */
 
 import { factories } from '@strapi/strapi';
 
+// Fields a guest must never be able to set from the public site
 const PROTECTED_FIELDS = [
   'booking_status',
   'payment_status',
@@ -19,7 +23,11 @@ function stripProtected(ctx: any) {
   }
 }
 
+const sameEmail = (a: unknown, b: unknown) =>
+  String(a ?? '').trim().toLowerCase() === String(b ?? '').trim().toLowerCase();
+
 export default factories.createCoreController('api::booking.booking', ({ strapi }) => ({
+  // ─── Guests create a booking (no login needed) ──────────────────
   async create(ctx) {
     stripProtected(ctx);
     const data = ctx.request.body?.data ?? {};
@@ -57,18 +65,58 @@ export default factories.createCoreController('api::booking.booking', ({ strapi 
     return super.create(ctx);
   },
 
-  async update(ctx) {
-    stripProtected(ctx);
-    const data = ctx.request.body?.data;
-    if (data && typeof data === 'object') {
-      delete data.total;
-      delete data.room;
-      delete data.check_in;
-      delete data.check_out;
-    }
-    return super.update(ctx);
+  // ─── Logged-in users: list ONLY their own bookings ──────────────
+  async find(ctx) {
+    const user = ctx.state.user;
+    if (!user?.email) return ctx.unauthorized('Please log in.');
+
+    const query: any = ctx.query ?? {};
+    ctx.query = {
+      ...query,
+      filters: { ...(query.filters ?? {}), email: { $eqi: user.email } },
+    };
+    return super.find(ctx);
   },
 
+  // ─── Logged-in users: open ONLY their own booking ───────────────
+  async findOne(ctx) {
+    const user = ctx.state.user;
+    if (!user?.email) return ctx.unauthorized('Please log in.');
+
+    const res: any = await super.findOne(ctx);
+    if (!res?.data || !sameEmail(res.data.email, user.email)) {
+      return ctx.notFound('Booking not found');
+    }
+    return res;
+  },
+
+  // ─── Logged-in users: the only allowed change is cancelling ─────
+  async update(ctx) {
+    const user = ctx.state.user;
+    if (!user?.email) return ctx.unauthorized('Please log in.');
+
+    const { id: documentId } = ctx.params;
+    const docs = strapi.documents('api::booking.booking');
+    const booking: any = await docs.findOne({ documentId });
+
+    if (!booking || !sameEmail(booking.email, user.email)) {
+      return ctx.notFound('Booking not found');
+    }
+    if (ctx.request.body?.data?.booking_status !== 'Cancelled') {
+      return ctx.forbidden('Bookings can only be cancelled.');
+    }
+    if (!['Pending', 'Approved'].includes(booking.booking_status)) {
+      return ctx.badRequest('This booking can no longer be cancelled.');
+    }
+
+    await docs.update({ documentId, data: { booking_status: 'Cancelled' } } as any);
+    await docs.publish({ documentId } as any);
+    const updated: any = await docs.findOne({ documentId });
+
+    ctx.body = { data: updated };
+  },
+
+  // ─── Guests verify their payment (no login needed) ──────────────
   async verifyPayment(ctx) {
     const { documentId } = ctx.params;
     const docs = strapi.documents('api::booking.booking');
