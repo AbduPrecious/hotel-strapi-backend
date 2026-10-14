@@ -67,7 +67,10 @@ export default factories.createCoreService('api::booking.booking', ({ strapi }) 
       return { code: 'bad_request', message: 'Select a bank and enter the reference number.' };
     }
 
-    const save = (data: any) => docs.update({ documentId, data } as any);
+    const save = async (data: any) => {
+      await docs.update({ documentId, data } as any);
+      await docs.publish({ documentId } as any);
+    };
 
     // Same receipt cannot pay for two bookings
     const dup: any[] = await docs.findMany({
