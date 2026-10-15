@@ -1,7 +1,7 @@
 /**
  * booking controller
  *
- * Public (anonymous guests):  create, verifyPayment
+ * Public (anonymous guests):  create, verifyPayment, availability (dates only, no personal data)
  * Authenticated (logged in):   find / findOne (own bookings only), update (cancel own booking only)
  */
 
@@ -25,6 +25,25 @@ function stripProtected(ctx: any) {
 
 const sameEmail = (a: unknown, b: unknown) =>
   String(a ?? '').trim().toLowerCase() === String(b ?? '').trim().toLowerCase();
+
+// A booking blocks its dates when it is Approved, or Pending with a payment that has not failed.
+// Cancelled, Rejected and failed-payment bookings free the dates again.
+const blockingFilter = () => ({
+  $or: [
+    { booking_status: 'Approved' },
+    {
+      $and: [
+        { booking_status: 'Pending' },
+        {
+          $or: [
+            { payment_status: { $null: true } },
+            { payment_status: { $ne: 'failed' } },
+          ],
+        },
+      ],
+    },
+  ],
+});
 
 export default factories.createCoreController('api::booking.booking', ({ strapi }) => ({
   // ─── Guests create a booking (no login needed) ──────────────────
@@ -58,11 +77,54 @@ export default factories.createCoreController('api::booking.booking', ({ strapi 
     );
     if (!(nights >= 1)) return ctx.badRequest('Invalid dates');
 
+    // Reject dates that overlap an existing booking for the same room
+    const clash: any[] = await strapi.documents('api::booking.booking').findMany({
+      status: 'published',
+      filters: {
+        $and: [
+          blockingFilter(),
+          { room: { documentId: roomDocId } },
+          { check_in: { $lt: data.check_out } },
+          { check_out: { $gt: data.check_in } },
+        ],
+      },
+      limit: 1,
+    } as any);
+    if (clash.length) {
+      return ctx.badRequest('These dates are no longer available for this room.');
+    }
+
     // Never trust the total sent by the browser
     data.total = Math.ceil(Number(room.price) * nights);
     ctx.request.body.data = data;
 
     return super.create(ctx);
+  },
+
+  // ─── Anyone: which dates are taken (no names, emails or phones) ─
+  async availability(ctx) {
+    const roomId = ctx.query?.room ? String(ctx.query.room) : null;
+    const today = new Date().toISOString().slice(0, 10);
+
+    const and: any[] = [blockingFilter(), { check_out: { $gte: today } }];
+    if (roomId) and.push({ room: { documentId: roomId } });
+
+    const rows: any[] = await strapi.documents('api::booking.booking').findMany({
+      status: 'published',
+      filters: { $and: and },
+      fields: ['check_in', 'check_out', 'booking_status'],
+      populate: { room: { fields: ['documentId'] } },
+      limit: 500,
+    } as any);
+
+    ctx.body = {
+      data: rows.map((r) => ({
+        check_in: r.check_in,
+        check_out: r.check_out,
+        booking_status: r.booking_status,
+        room: r.room ? { documentId: r.room.documentId } : null,
+      })),
+    };
   },
 
   // ─── Logged-in users: list ONLY their own bookings ──────────────
