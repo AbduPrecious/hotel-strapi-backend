@@ -77,6 +77,11 @@
     },
     "support_email": {
       "type": "email"
+    },
+    "banks": {
+      "type": "component",
+      "component": "payment.bank-item",
+      "repeatable": true
     }
   }
 }

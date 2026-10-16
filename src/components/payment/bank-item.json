@@ -1,0 +1,42 @@
+{
+  "collectionName": "components_payment_bank_items",
+  "info": {
+    "displayName": "Bank Item"
+  },
+  "options": {},
+  "attributes": {
+    "bank_code": {
+      "type": "string"
+    },
+    "display_name": {
+      "type": "string"
+    },
+    "logo": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "qr_code": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "account_name": {
+      "type": "string"
+    },
+    "account_number": {
+      "type": "string"
+    },
+    "reference_label": {
+      "type": "string"
+    },
+    "reference_hint": {
+      "type": "text"
+    }
+  },
+  "config": {}
+}

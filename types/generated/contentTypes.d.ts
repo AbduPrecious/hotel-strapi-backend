@@ -947,6 +947,7 @@ export interface ApiPaymentMethodPaymentMethod extends Struct.SingleTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
+    banks: Schema.Attribute.Component<'payment.bank-item', true>;
     cbe_account_name: Schema.Attribute.String;
     cbe_account_number: Schema.Attribute.String;
     cbe_bank_name: Schema.Attribute.String;
