@@ -45,6 +45,38 @@
         "videos",
         "audios"
       ]
+    },
+    "cbe_logo": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "telebirr_logo": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "cbe_display_name": {
+      "type": "string"
+    },
+    "telebirr_display_name": {
+      "type": "string"
+    },
+    "cbe_reference_hint": {
+      "type": "text"
+    },
+    "telebirr_reference_hint": {
+      "type": "text"
+    },
+    "support_phone": {
+      "type": "string"
+    },
+    "support_email": {
+      "type": "email"
     }
   }
 }
