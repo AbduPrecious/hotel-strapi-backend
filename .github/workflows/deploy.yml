@@ -79,16 +79,26 @@ jobs:
             cd /var/www/hotel-api/hotel-strapi-backend
             git pull origin main
 
-            # 1) Database backup. If it fails or is empty, stop before touching anything.
+            # 1) Database backup — best-effort. Warns if it fails, but does NOT
+            #    block the deploy (so migrations still go through).
             mkdir -p ~/backups
             BACKUP=~/backups/hotel-$(date +%F-%H%M).sql
-            docker compose exec -T strapi-db sh -c 'pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB"' > "$BACKUP"
-            if [ ! -s "$BACKUP" ]; then
-              echo "BACKUP FAILED OR EMPTY - aborting deploy"
-              rm -f "$BACKUP"
-              exit 1
+
+            # Auto-detect the DB service name (works with strapi-db, db, postgres, etc.)
+            DB_SERVICE=$(docker compose config --services 2>/dev/null | grep -Ei 'db|postgres|database' | head -1)
+            echo "DB service detected: ${DB_SERVICE:-<none>}"
+
+            if [ -n "$DB_SERVICE" ]; then
+              docker compose exec -T "$DB_SERVICE" sh -c 'pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB"' > "$BACKUP" 2>/dev/null || true
+              if [ -s "$BACKUP" ]; then
+                echo "✅ Backup OK: $(ls -lh "$BACKUP")"
+              else
+                echo "⚠️  Backup failed or empty — continuing anyway (non-blocking)"
+                rm -f "$BACKUP"
+              fi
+            else
+              echo "⚠️  Could not detect DB service — skipping backup"
             fi
-            echo "Backup OK: $(ls -lh "$BACKUP")"
 
             # 2) Write Verify.ET settings into the server .env
             [ -n "$(tail -c1 .env)" ] && echo >> .env

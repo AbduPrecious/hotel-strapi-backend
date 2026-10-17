@@ -382,6 +382,31 @@ export default factories.createCoreController(
         .trim()
         .toLowerCase();
 
+            // ── Save the receipt image to the booking (for admin review) ──
+      try {
+        const uploadService = strapi.plugin('upload').service('upload');
+        const uploaded = await uploadService.upload({
+          data: {},
+          files: {
+            path: file.filepath,
+            name: safeName,
+            type: sniffedMime,
+            size,
+          },
+        });
+        if (uploaded && uploaded[0]?.id) {
+          await docs.update({
+            documentId,
+            data: { payment_receipt: uploaded[0].id } as any,
+          } as any);
+          await docs.publish({ documentId } as any);
+        }
+      } catch (e) {
+        strapi.log.warn(`Could not save receipt image: ${e}`);
+        // Non-fatal — continue with verification anyway
+      }
+
+      // ── Hand off to the service ──
       const result = await strapi
         .service('api::booking.booking')
         .verifyPaymentImage(
