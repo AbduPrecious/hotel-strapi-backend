@@ -570,7 +570,7 @@ export interface ApiBookingBooking extends Struct.CollectionTypeSchema {
   };
   attributes: {
     booking_status: Schema.Attribute.Enumeration<
-      ['Pending', 'Approved', 'Rejected', 'Cancelled']
+      ['Pending', 'Approved', 'Rejected', 'Cancelled', 'Completed']
     > &
       Schema.Attribute.DefaultTo<'Pending'>;
     check_in: Schema.Attribute.Date;
@@ -601,18 +601,24 @@ export interface ApiBookingBooking extends Struct.CollectionTypeSchema {
       ]
     >;
     payment_method: Schema.Attribute.Enumeration<['bank_transfer', 'cash']>;
+    payment_receipt: Schema.Attribute.Media<
+      'images' | 'files' | 'videos' | 'audios'
+    >;
     payment_reference: Schema.Attribute.String;
     payment_status: Schema.Attribute.Enumeration<
-      ['unverified', 'verifying', 'verified', 'failed']
+      [
+        'unverified',
+        'verifying',
+        'verified',
+        'failed',
+        'pending_manual_review',
+        'refunded',
+      ]
     > &
       Schema.Attribute.DefaultTo<'unverified'>;
-    payment_suffix: Schema.Attribute.String;
     phone: Schema.Attribute.String;
     publishedAt: Schema.Attribute.DateTime;
     room: Schema.Attribute.Relation<'oneToOne', 'api::room.room'>;
-    screenshot: Schema.Attribute.Media<
-      'images' | 'files' | 'videos' | 'audios'
-    >;
     total: Schema.Attribute.Integer;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &

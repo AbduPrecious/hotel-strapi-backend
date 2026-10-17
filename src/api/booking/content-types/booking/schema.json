@@ -34,16 +34,6 @@
     "total": {
       "type": "integer"
     },
-    "screenshot": {
-      "type": "media",
-      "multiple": false,
-      "allowedTypes": [
-        "images",
-        "files",
-        "videos",
-        "audios"
-      ]
-    },
     "booking_status": {
       "type": "enumeration",
       "default": "Pending",
@@ -51,7 +41,8 @@
         "Pending",
         "Approved",
         "Rejected",
-        "Cancelled"
+        "Cancelled",
+        "Completed"
       ]
     },
     "payment_method": {
@@ -79,9 +70,6 @@
     "payment_reference": {
       "type": "string"
     },
-    "payment_suffix": {
-      "type": "string"
-    },
     "payment_status": {
       "type": "enumeration",
       "default": "unverified",
@@ -89,7 +77,9 @@
         "unverified",
         "verifying",
         "verified",
-        "failed"
+        "failed",
+        "pending_manual_review",
+        "refunded"
       ]
     },
     "verify_request_id": {
@@ -97,6 +87,16 @@
     },
     "verified_at": {
       "type": "datetime"
+    },
+    "payment_receipt": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
     }
   }
 }
