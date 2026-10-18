@@ -699,7 +699,7 @@ export interface ApiContactContact extends Struct.SingleTypeSchema {
 export interface ApiFeatureIconFeatureIcon extends Struct.CollectionTypeSchema {
   collectionName: 'feature_icons';
   info: {
-    displayName: 'Feature Icon';
+    displayName: 'Features';
     pluralName: 'feature-icons';
     singularName: 'feature-icon';
   };
@@ -764,7 +764,7 @@ export interface ApiGalleryGallery extends Struct.CollectionTypeSchema {
 export interface ApiHomeWelcomeHomeWelcome extends Struct.SingleTypeSchema {
   collectionName: 'home_welcomes';
   info: {
-    displayName: 'HomeWelcome';
+    displayName: 'Welcome';
     pluralName: 'home-welcomes';
     singularName: 'home-welcome';
   };
@@ -954,15 +954,6 @@ export interface ApiPaymentMethodPaymentMethod extends Struct.SingleTypeSchema {
   };
   attributes: {
     banks: Schema.Attribute.Component<'payment.bank-item', true>;
-    cbe_account_name: Schema.Attribute.String;
-    cbe_account_number: Schema.Attribute.String;
-    cbe_bank_name: Schema.Attribute.String;
-    cbe_display_name: Schema.Attribute.String;
-    cbe_logo: Schema.Attribute.Media<'images'>;
-    cbe_qr_code: Schema.Attribute.Media<
-      'images' | 'files' | 'videos' | 'audios'
-    >;
-    cbe_reference_hint: Schema.Attribute.Text;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
@@ -975,14 +966,6 @@ export interface ApiPaymentMethodPaymentMethod extends Struct.SingleTypeSchema {
     publishedAt: Schema.Attribute.DateTime;
     support_email: Schema.Attribute.Email;
     support_phone: Schema.Attribute.String;
-    telebirr_display_name: Schema.Attribute.String;
-    telebirr_logo: Schema.Attribute.Media<'images'>;
-    telebirr_name: Schema.Attribute.String;
-    telebirr_number: Schema.Attribute.String;
-    telebirr_qr_code: Schema.Attribute.Media<
-      'images' | 'files' | 'videos' | 'audios'
-    >;
-    telebirr_reference_hint: Schema.Attribute.Text;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
