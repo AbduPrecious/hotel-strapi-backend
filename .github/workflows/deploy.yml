@@ -111,7 +111,10 @@ jobs:
               grep -q "^$k=" .env || echo "$kv" >> .env
             done
 
+            # 3) Pull latest image + FORCE recreate
+            #    --pull always   → forces registry pull, ignores cache
+            #    --force-recreate → destroys old containers, starts fresh
             export STRAPI_IMAGE
-            docker compose pull
-            docker compose up -d
+            docker compose pull --ignore-pull-failures
+            docker compose up -d --pull always --force-recreate
             docker image prune -f
