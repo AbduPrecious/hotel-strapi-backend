@@ -28,8 +28,7 @@ const sameEmail = (a: unknown, b: unknown) =>
   String(a ?? '').trim().toLowerCase() === String(b ?? '').trim().toLowerCase();
 
 // A booking blocks its dates when it is Approved, or Pending with a payment
-// that has not failed. Cancelled, Rejected and failed-payment bookings free
-// the dates again.
+// that has not failed.
 const blockingFilter = () => ({
   $or: [
     { booking_status: 'Approved' },
@@ -53,20 +52,9 @@ const blockingFilter = () => ({
 function sniffImageMime(buf: Buffer): string | null {
   if (!buf || buf.length < 4) return null;
 
-  if (buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) {
-    return 'image/jpeg';
-  }
-  if (
-    buf[0] === 0x89 &&
-    buf[1] === 0x50 &&
-    buf[2] === 0x4e &&
-    buf[3] === 0x47
-  ) {
-    return 'image/png';
-  }
-  if (buf[0] === 0x47 && buf[1] === 0x49 && buf[2] === 0x46) {
-    return 'image/gif';
-  }
+  if (buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) return 'image/jpeg';
+  if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) return 'image/png';
+  if (buf[0] === 0x47 && buf[1] === 0x49 && buf[2] === 0x46) return 'image/gif';
   if (
     buf[0] === 0x52 &&
     buf[1] === 0x49 &&
@@ -83,6 +71,83 @@ function sniffImageMime(buf: Buffer): string | null {
   return null;
 }
 
+/**
+ * Save an uploaded receipt file to Strapi's media library and attach it
+ * to the booking. Best-effort.
+ */
+async function saveReceiptImage(
+  strapi: any,
+  documentId: string,
+  file: any,
+  safeName: string,
+  sniffedMime: string,
+  buffer: Buffer
+): Promise<any | null> {
+  try {
+    const fsSync = require('fs');
+    const fsPromises = await import('fs/promises');
+    const path = await import('path');
+    const os = await import('os');
+
+    const tmpDir = os.tmpdir();
+    const ext = safeName.split('.').pop() || 'jpg';
+    const tmpPath = path.join(tmpDir, `receipt-${documentId}-${Date.now()}.${ext}`);
+
+    await fsPromises.writeFile(tmpPath, buffer);
+
+    strapi.log.info(
+      `[verifyPaymentImage] Uploading: tmpPath=${tmpPath}, mime=${sniffedMime}, size=${buffer.length}`
+    );
+
+    const uploadService = strapi.plugin('upload').service('upload');
+
+ const uploaded = await uploadService.upload({
+  data: {},
+  files: {
+    filepath: tmpPath,
+    originalFilename: safeName,
+    mimetype: sniffedMime,
+    size: buffer.length,
+  } as any,
+});
+
+    try {
+      await fsPromises.unlink(tmpPath);
+    } catch {
+      /* ignore */
+    }
+
+    strapi.log.info(
+      `[verifyPaymentImage] Upload result: ${JSON.stringify(
+        uploaded?.map((u: any) => ({ id: u?.id, url: u?.url }))
+      )}`
+    );
+
+    if (uploaded && uploaded[0]?.id) {
+      const docs = strapi.documents('api::booking.booking');
+      await docs.update({
+        documentId,
+        data: { payment_receipt: uploaded[0].id } as any,
+      } as any);
+      await docs.publish({ documentId } as any);
+      strapi.log.info(`[verifyPaymentImage] Saved: fileId=${uploaded[0].id}`);
+      return uploaded[0];
+    }
+
+    strapi.log.warn(`[verifyPaymentImage] Upload returned no files`);
+    return null;
+ } catch (e: any) {
+  strapi.log.error('========== UPLOAD ERROR ==========');
+  strapi.log.error(`Message: ${e.message}`);
+  strapi.log.error(`Name: ${e.name}`);
+  strapi.log.error(`Code: ${e.code}`);
+  strapi.log.error(`Details: ${JSON.stringify(e.details || {}, null, 2)}`);
+  strapi.log.error(`Stack: ${e.stack}`);
+  strapi.log.error('========== END UPLOAD ERROR ==========');
+  return null;
+}
+}
+
 export default factories.createCoreController(
   'api::booking.booking',
   ({ strapi }) => ({
@@ -91,10 +156,7 @@ export default factories.createCoreController(
       stripProtected(ctx);
       const data = ctx.request.body?.data ?? {};
 
-      const ref =
-        data.room?.documentId ??
-        data.room?.connect?.[0]?.documentId ??
-        data.room;
+      const ref = data.room?.documentId ?? data.room?.connect?.[0]?.documentId ?? data.room;
 
       let roomDocId: string | null = null;
       if (ref !== undefined && ref !== null && ref !== '') {
@@ -112,34 +174,27 @@ export default factories.createCoreController(
       const room: any = await strapi
         .documents('api::room.room')
         .findOne({ documentId: roomDocId, status: 'published' });
-      if (!room || room.available === false)
-        return ctx.badRequest('Room not available');
+      if (!room || room.available === false) return ctx.badRequest('Room not available');
 
       const nights = Math.round(
-        (new Date(data.check_out).getTime() -
-          new Date(data.check_in).getTime()) /
-          86400000
+        (new Date(data.check_out).getTime() - new Date(data.check_in).getTime()) / 86400000
       );
       if (!(nights >= 1)) return ctx.badRequest('Invalid dates');
 
-      const clash: any[] = await strapi
-        .documents('api::booking.booking')
-        .findMany({
-          status: 'published',
-          filters: {
-            $and: [
-              blockingFilter(),
-              { room: { documentId: roomDocId } },
-              { check_in: { $lt: data.check_out } },
-              { check_out: { $gt: data.check_in } },
-            ],
-          },
-          limit: 1,
-        } as any);
+      const clash: any[] = await strapi.documents('api::booking.booking').findMany({
+        status: 'published',
+        filters: {
+          $and: [
+            blockingFilter(),
+            { room: { documentId: roomDocId } },
+            { check_in: { $lt: data.check_out } },
+            { check_out: { $gt: data.check_in } },
+          ],
+        },
+        limit: 1,
+      } as any);
       if (clash.length) {
-        return ctx.badRequest(
-          'These dates are no longer available for this room.'
-        );
+        return ctx.badRequest('These dates are no longer available for this room.');
       }
 
       data.total = Math.ceil(Number(room.price) * nights);
@@ -153,21 +208,16 @@ export default factories.createCoreController(
       const roomId = ctx.query?.room ? String(ctx.query.room) : null;
       const today = new Date().toISOString().slice(0, 10);
 
-      const and: any[] = [
-        blockingFilter(),
-        { check_out: { $gte: today } },
-      ];
+      const and: any[] = [blockingFilter(), { check_out: { $gte: today } }];
       if (roomId) and.push({ room: { documentId: roomId } });
 
-      const rows: any[] = await strapi
-        .documents('api::booking.booking')
-        .findMany({
-          status: 'published',
-          filters: { $and: and },
-          fields: ['check_in', 'check_out', 'booking_status'],
-          populate: { room: { fields: ['documentId'] } },
-          limit: 500,
-        } as any);
+      const rows: any[] = await strapi.documents('api::booking.booking').findMany({
+        status: 'published',
+        filters: { $and: and },
+        fields: ['check_in', 'check_out', 'booking_status'],
+        populate: { room: { fields: ['documentId'] } },
+        limit: 500,
+      } as any);
 
       ctx.body = {
         data: rows.map((r) => ({
@@ -213,9 +263,8 @@ export default factories.createCoreController(
       const docs = strapi.documents('api::booking.booking');
       const booking: any = await docs.findOne({ documentId });
 
-      if (!booking || !sameEmail(booking.email, user.email)) {
+      if (!booking || !sameEmail(booking.email, user.email))
         return ctx.notFound('Booking not found');
-      }
       if (ctx.request.body?.data?.booking_status !== 'Cancelled') {
         return ctx.forbidden('Bookings can only be cancelled.');
       }
@@ -223,10 +272,7 @@ export default factories.createCoreController(
         return ctx.badRequest('This booking can no longer be cancelled.');
       }
 
-      await docs.update({
-        documentId,
-        data: { booking_status: 'Cancelled' },
-      } as any);
+      await docs.update({ documentId, data: { booking_status: 'Cancelled' } } as any);
       await docs.publish({ documentId } as any);
       const updated: any = await docs.findOne({ documentId });
 
@@ -259,14 +305,10 @@ export default factories.createCoreController(
         }
       }
 
-      const result = await strapi
-        .service('api::booking.booking')
-        .verifyPayment(documentId);
+      const result = await strapi.service('api::booking.booking').verifyPayment(documentId);
 
-      if (result.code === 'not_found')
-        return ctx.notFound('Booking not found');
-      if (result.code === 'bad_request')
-        return ctx.badRequest(result.message);
+      if (result.code === 'not_found') return ctx.notFound('Booking not found');
+      if (result.code === 'bad_request') return ctx.badRequest(result.message);
 
       ctx.body = { status: result.status, message: result.message };
     },
@@ -281,28 +323,18 @@ export default factories.createCoreController(
       const files = (ctx.request as any)?.files ?? {};
 
       strapi.log.info(
-        `[verifyPaymentImage] ctx.request.files keys = ${
-          Object.keys(files).join(', ') || '(none)'
-        }`
+        `[verifyPaymentImage] ctx.request.files keys = ${Object.keys(files).join(', ') || '(none)'}`
       );
 
       const fileField =
-        files['image'] ||
-        files['files.image'] ||
-        files['files'] ||
-        Object.values(files)[0];
-
+        files['image'] || files['files.image'] || files['files'] || Object.values(files)[0];
       const file: any = Array.isArray(fileField) ? fileField[0] : fileField;
 
       if (!file) {
         strapi.log.warn(
-          `[verifyPaymentImage] no file found in request. files=${JSON.stringify(
-            Object.keys(files)
-          )}`
+          `[verifyPaymentImage] no file found in request. files=${JSON.stringify(Object.keys(files))}`
         );
-        return ctx.badRequest(
-          'No image uploaded. Please attach a JPG, PNG, GIF, or WebP.'
-        );
+        return ctx.badRequest('No image uploaded. Please attach a JPG, PNG, GIF, or WebP.');
       }
 
       strapi.log.info(
@@ -311,16 +343,10 @@ export default factories.createCoreController(
           `hasBuffer=${!!file.buffer} isBuffer=${Buffer.isBuffer(file.buffer)} ` +
           `hasFilepath=${!!file.filepath} filepath=${file.filepath || 'none'} ` +
           `mimetype=${file.mimetype || file.mime || 'none'} ` +
-          `originalFilename=${
-            file.originalFilename || file.originalname || file.name || 'none'
-          } ` +
+          `originalFilename=${file.originalFilename || file.originalname || file.name || 'none'} ` +
           `size=${file.size || (file.buffer ? file.buffer.length : 'none')}`
       );
 
-      // ── Resolve the file contents ──
-      // Strapi/multer uses:
-      //   - file.buffer    when memory storage is configured
-      //   - file.filepath  when disk storage is used (Strapi 5 default)
       let buffer: Buffer | null = null;
       if (file.buffer && Buffer.isBuffer(file.buffer)) {
         buffer = file.buffer;
@@ -330,9 +356,7 @@ export default factories.createCoreController(
           const fs = await import('fs/promises');
           buffer = await fs.readFile(diskPath);
         } catch (e) {
-          strapi.log.error(
-            `Could not read uploaded file at ${diskPath}: ${e}`
-          );
+          strapi.log.error(`Could not read uploaded file at ${diskPath}: ${e}`);
           buffer = null;
         }
       }
@@ -341,29 +365,21 @@ export default factories.createCoreController(
         strapi.log.warn(
           `[verifyPaymentImage] could not resolve buffer. hasBuffer=${!!file.buffer} hasFilepath=${!!file.filepath}`
         );
-        return ctx.badRequest(
-          'We could not read the uploaded image. Please try again.'
-        );
+        return ctx.badRequest('We could not read the uploaded image. Please try again.');
       }
 
       const size = buffer.length;
-      if (size > MAX_IMAGE_BYTES) {
-        return ctx.badRequest('Image is too large. Max 8 MB.');
-      }
+      if (size > MAX_IMAGE_BYTES) return ctx.badRequest('Image is too large. Max 8 MB.');
 
       const sniffedMime = sniffImageMime(buffer);
-      const reportedMime = String(
-        file.mimetype || file.mime || file.type || ''
-      ).toLowerCase();
+      const reportedMime = String(file.mimetype || file.mime || file.type || '').toLowerCase();
 
       strapi.log.info(
         `[verifyPaymentImage] resolved: reportedMime="${reportedMime}" sniffedMime="${sniffedMime}" size=${size}`
       );
 
       if (!sniffedMime) {
-        return ctx.badRequest(
-          'Please upload a JPG, PNG, GIF, or WebP image.'
-        );
+        return ctx.badRequest('Please upload a JPG, PNG, GIF, or WebP image.');
       }
 
       const safeExt =
@@ -374,51 +390,23 @@ export default factories.createCoreController(
           : sniffedMime === 'image/gif'
           ? 'gif'
           : 'webp';
-      const safeName = `receipt.${safeExt}`;
+      const safeName = `receipt-${documentId}.${safeExt}`;
 
-      const bankFromBody =
-        ctx.request.body?.payment_bank ?? ctx.request.body?.bank ?? null;
+      await saveReceiptImage(strapi, documentId, file, safeName, sniffedMime, buffer);
+
+      const bankFromBody = ctx.request.body?.payment_bank ?? ctx.request.body?.bank ?? null;
       const bankCode = String(bankFromBody || booking.payment_bank || '')
         .trim()
         .toLowerCase();
 
-            // ── Save the receipt image to the booking (for admin review) ──
-      try {
-        const uploadService = strapi.plugin('upload').service('upload');
-        const uploaded = await uploadService.upload({
-          data: {},
-          files: {
-            path: file.filepath,
-            name: safeName,
-            type: sniffedMime,
-            size,
-          },
-        });
-        if (uploaded && uploaded[0]?.id) {
-          await docs.update({
-            documentId,
-            data: { payment_receipt: uploaded[0].id } as any,
-          } as any);
-          await docs.publish({ documentId } as any);
-        }
-      } catch (e) {
-        strapi.log.warn(`Could not save receipt image: ${e}`);
-        // Non-fatal — continue with verification anyway
-      }
+      const result = await strapi.service('api::booking.booking').verifyPaymentImage(
+        documentId,
+        { buffer, mime: sniffedMime, name: safeName },
+        bankCode
+      );
 
-      // ── Hand off to the service ──
-      const result = await strapi
-        .service('api::booking.booking')
-        .verifyPaymentImage(
-          documentId,
-          { buffer, mime: sniffedMime, name: safeName },
-          bankCode
-        );
-
-      if (result.code === 'not_found')
-        return ctx.notFound('Booking not found');
-      if (result.code === 'bad_request')
-        return ctx.badRequest(result.message);
+      if (result.code === 'not_found') return ctx.notFound('Booking not found');
+      if (result.code === 'bad_request') return ctx.badRequest(result.message);
 
       ctx.body = { status: result.status, message: result.message };
     },
